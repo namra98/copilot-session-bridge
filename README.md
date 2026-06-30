@@ -182,6 +182,10 @@ Use `enqueue` unless you deliberately want to steer an active turn.
 - Restart or reload the session to rotate the token.
 - Remove stale files under `~/.copilot/session-send-bridge/` when needed.
 
+## License
+
+This project is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE). Commercial use requires separate permission.
+
 ## Telex integration
 
 ```mermaid
