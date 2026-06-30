@@ -1,20 +1,28 @@
 # Protocol
 
-This protocol is implemented by the `session-send-bridge` Copilot CLI extension.
+This document describes the automation contract for the `session-send-bridge` Copilot CLI extension.
 
-The bridge is an extension, not a plugin. It must be installed under either:
+## Flow
 
-```text
-~/.copilot/extensions/session-send-bridge/extension.mjs
+```mermaid
+sequenceDiagram
+  participant Sender as External sender
+  participant Registry as Bridge registry
+  participant Bridge as Loopback bridge
+  participant SDK as Copilot SDK
+  participant Session as Copilot session
+
+  Sender->>Registry: Read <sessionId>.json
+  Registry-->>Sender: bridgeUrl, healthUrl, token
+  Sender->>Bridge: GET /health
+  Bridge-->>Sender: { ok, sessionId, bridgeUrl }
+  Sender->>Bridge: POST /send { prompt, mode }
+  Bridge->>SDK: session.send({ prompt, mode })
+  SDK->>Session: enqueue / immediate delivery
+  Session-->>SDK: messageId
+  SDK-->>Bridge: messageId
+  Bridge-->>Sender: { ok, sessionId, messageId, mode }
 ```
-
-or:
-
-```text
-.github/extensions/session-send-bridge/extension.mjs
-```
-
-Each Copilot session that loads the extension starts its own loopback endpoint and writes its own registry entry.
 
 ## Registry
 
@@ -31,6 +39,28 @@ Each bridge-enabled session writes:
 }
 ```
 
+Default registry directory:
+
+```text
+~/.copilot/session-send-bridge/
+```
+
+## Health request
+
+```http
+GET /health
+```
+
+Response:
+
+```json
+{
+  "ok": true,
+  "sessionId": "uuid",
+  "bridgeUrl": "http://127.0.0.1:12345/send"
+}
+```
+
 ## Send request
 
 ```http
@@ -39,12 +69,21 @@ Authorization: Bearer <token>
 Content-Type: application/json
 ```
 
+Body:
+
 ```json
 {
   "prompt": "message text",
   "mode": "enqueue"
 }
 ```
+
+`mode`:
+
+| Mode | Behavior |
+|---|---|
+| `enqueue` | Add message to the session queue. |
+| `immediate` | Interject during the active turn. |
 
 ## Send response
 
@@ -57,18 +96,12 @@ Content-Type: application/json
 }
 ```
 
-## Health
-
-```http
-GET /health
-```
+Errors:
 
 ```json
-{
-  "ok": true,
-  "sessionId": "uuid",
-  "bridgeUrl": "http://127.0.0.1:12345/send"
-}
+{ "ok": false, "error": "unauthorized" }
+{ "ok": false, "error": "prompt_required" }
+{ "ok": false, "error": "not_found" }
 ```
 
 ## Telex envelope suggestion
@@ -88,4 +121,16 @@ required_action:
 - handle this message
 - disposition message_id via telex ack/handle/defer/reject/etc.
 [/TELEX_MESSAGE]
+```
+
+## Telex delivery
+
+```mermaid
+flowchart TD
+  A["Telex daemon receives message"] --> B["Lookup Copilot session bridge"]
+  B --> C{"Bridge healthy?"}
+  C -- yes --> D["POST /send mode=enqueue"]
+  C -- no --> E["Fallback to classic waiter / queued delivery"]
+  D --> F["Copilot session handles message"]
+  F --> G["Session dispositions Telex message"]
 ```
