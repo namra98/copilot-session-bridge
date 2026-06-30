@@ -1,5 +1,21 @@
 # Protocol
 
+This protocol is implemented by the `session-send-bridge` Copilot CLI extension.
+
+The bridge is an extension, not a plugin. It must be installed under either:
+
+```text
+~/.copilot/extensions/session-send-bridge/extension.mjs
+```
+
+or:
+
+```text
+.github/extensions/session-send-bridge/extension.mjs
+```
+
+Each Copilot session that loads the extension starts its own loopback endpoint and writes its own registry entry.
+
 ## Registry
 
 Each bridge-enabled session writes:
@@ -73,4 +89,3 @@ required_action:
 - disposition message_id via telex ack/handle/defer/reject/etc.
 [/TELEX_MESSAGE]
 ```
-
