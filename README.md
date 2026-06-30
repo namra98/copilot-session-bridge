@@ -10,6 +10,18 @@ session.send({ prompt, mode });
 
 For the wire contract and automation-facing details, see [`docs/protocol.md`](docs/protocol.md).
 
+## Concept
+
+An active Copilot CLI session is not normally addressable from another process. A session ID tells you which conversation exists, and a PID tells you which process is alive, but neither gives you a safe way to inject a new message into the agent loop.
+
+Copilot CLI extensions solve that by running **inside** the session. Once loaded, this extension gets a live `session` object from the Copilot SDK. It then exposes a local `127.0.0.1` endpoint so trusted local tools can ask the extension to enqueue a message into that same session.
+
+In short:
+
+```text
+outside process -> local bridge -> Copilot SDK session.send() -> target Copilot session
+```
+
 ## Architecture
 
 ```mermaid
@@ -187,4 +199,3 @@ Suggested delivery mapping:
 | `background` | `enqueue` |
 | `next-checkpoint` | `enqueue` |
 | `interrupt` | `enqueue` by default; `immediate` only when intentional |
-
