@@ -1,0 +1,21 @@
+{
+  "name": "copilot-session-bridge",
+  "description": "Loopback bridge for sending messages into active GitHub Copilot CLI sessions via the Copilot SDK.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Namra Prajapati"
+  },
+  "license": "MIT",
+  "keywords": [
+    "copilot",
+    "copilot-cli",
+    "extension",
+    "session",
+    "bridge",
+    "session-send",
+    "telex",
+    "streamliner",
+    "agent-coordination"
+  ]
+}
+
