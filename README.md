@@ -184,7 +184,7 @@ Use `enqueue` unless you deliberately want to steer an active turn.
 
 ## License
 
-This project is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE). Commercial use requires separate permission.
+This project is licensed under the [MIT License](LICENSE).
 
 ## Telex integration
 
